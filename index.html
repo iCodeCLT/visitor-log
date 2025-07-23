@@ -108,31 +108,41 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzHNijY-DgR7tiGDNRoDlKubgEVAZtXsqiYebA5oTR1yObE2Qxa5yNVdpHTN0LnM33T/exec'; // Replace if using Google Apps Script
 
     form.addEventListener('submit', e => {
-      e.preventDefault();
+  e.preventDefault();
 
-      const data = {
-        parentName: document.getElementById('parentName').value.trim(),
-        studentName: document.getElementById('studentName').value.trim(),
-        action: document.getElementById('action').value,
-        signature: canvas.toDataURL()
-      };
+  const submitButton = form.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  message.textContent = "Submitting... Please wait.";
+  message.style.color = 'black';
 
-      fetch(scriptURL, {
-        method: 'POST',
-        body: JSON.stringify(data)
-      })
-      .then(res => res.text())
-      .then(() => {
-        message.textContent = "Thank you! Entry recorded.";
-        form.reset();
-        clearSignature();
-      })
-      .catch(err => {
-        console.error(err);
-        message.textContent = "Error submitting. Please try again.";
-        message.style.color = 'red';
-      });
-    });
+  const data = {
+    parentName: document.getElementById('parentName').value.trim(),
+    studentName: document.getElementById('studentName').value.trim(),
+    action: document.getElementById('action').value,
+    signature: canvas.toDataURL()
+  };
+
+  fetch(scriptURL, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+  .then(res => res.text())
+  .then(() => {
+    message.textContent = "✅ Thank you! Entry recorded.";
+    message.style.color = 'green';
+    form.reset();
+    clearSignature();
+  })
+  .catch(err => {
+    console.error(err);
+    message.textContent = "❌ Error submitting. Please try again.";
+    message.style.color = 'red';
+  })
+  .finally(() => {
+    submitButton.disabled = false;
+  });
+});
+
   </script>
 </body>
 </html>
