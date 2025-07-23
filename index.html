@@ -2,63 +2,86 @@
 <!-- Web App URL
 https://script.google.com/macros/s/AKfycbwH5bDyjJDDlNevC0HLUtcS4cbKloWNxqhAt9XodIPDozesPVXQPxbsuOP7FpVwegy_/exec
 -->
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Visitor Sign In/Out</title>
+  <title>Parent Sign In/Out</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f4; }
-    input, select, button {
-      font-size: 1.2rem; padding: 10px; margin: 10px; width: 80%;
-    }
+    body { font-family: sans-serif; background: #f4f4f4; padding: 20px; text-align: center; }
     .container {
-      max-width: 420px; margin: auto; background: white; padding: 20px; border-radius: 12px;
+      max-width: 420px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
+    h2 { margin-bottom: 10px; }
+    input, select, button {
+      font-size: 1.1rem;
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
     canvas {
-      border: 1px solid #ccc;
-      margin-top: 10px;
       width: 100%;
       height: 150px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
       touch-action: none;
     }
     .btn-clear {
-      background-color: #ddd;
+      background: #ddd;
       border: none;
       padding: 5px 10px;
       margin-top: 5px;
-      font-size: 1rem;
       cursor: pointer;
+    }
+    .message {
+      margin-top: 10px;
+      font-weight: bold;
+      color: green;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Welcome! Please Sign In or Out</h2>
+    <h2>Parent Sign In / Sign Out</h2>
     <form id="signForm">
-      <input type="text" id="name" placeholder="Your Name" required><br>
-      <input type="text" id="purpose" placeholder="Purpose of Visit" required><br>
+      <input type="text" id="parentName" placeholder="Parent Name" required>
+      <input type="text" id="studentName" placeholder="Student Name" required>
+
       <select id="action" required>
         <option value="">-- Select Action --</option>
         <option value="Sign In">Sign In</option>
         <option value="Sign Out">Sign Out</option>
-      </select><br>
+      </select>
 
-      <label>Signature:</label><br>
+      <label>Signature:</label>
       <canvas id="signaturePad"></canvas>
-      <button type="button" class="btn-clear" onclick="clearSignature()">Clear Signature</button><br>
+      <button type="button" class="btn-clear" onclick="clearSignature()">Clear Signature</button>
 
       <button type="submit">Submit</button>
+      <p class="message" id="message"></p>
     </form>
-    <p id="message"></p>
   </div>
 
   <script>
     const canvas = document.getElementById('signaturePad');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
+
+    // Resize canvas for touch devices
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = 150;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
     canvas.addEventListener('touchstart', e => {
       isDrawing = true;
@@ -85,31 +108,33 @@ https://script.google.com/macros/s/AKfycbwH5bDyjJDDlNevC0HLUtcS4cbKloWNxqhAt9Xod
 
     const form = document.getElementById('signForm');
     const message = document.getElementById('message');
-    const scriptURL = 'YOUR_WEB_APP_URL_HERE'; // Replace this
+
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwH5bDyjJDDlNevC0HLUtcS4cbKloWNxqhAt9XodIPDozesPVXQPxbsuOP7FpVwegy_/exec'; // Replace if using Google Apps Script
 
     form.addEventListener('submit', e => {
       e.preventDefault();
 
       const data = {
-        name: document.getElementById('name').value.trim(),
-        purpose: document.getElementById('purpose').value.trim(),
+        parentName: document.getElementById('parentName').value.trim(),
+        studentName: document.getElementById('studentName').value.trim(),
         action: document.getElementById('action').value,
-        signature: canvas.toDataURL() // Base64 encoded image
+        signature: canvas.toDataURL()
       };
 
       fetch(scriptURL, {
         method: 'POST',
         body: JSON.stringify(data)
       })
-      .then(response => response.text())
-      .then(result => {
-        message.textContent = "Thank you! Your entry has been recorded.";
+      .then(res => res.text())
+      .then(() => {
+        message.textContent = "Thank you! Entry recorded.";
         form.reset();
         clearSignature();
       })
-      .catch(error => {
+      .catch(err => {
+        console.error(err);
         message.textContent = "Error submitting. Please try again.";
-        console.error('Error:', error);
+        message.style.color = 'red';
       });
     });
   </script>
